@@ -6,3 +6,4 @@ author: Oribuin
 version: '1.0'
 softdepend:
   - HolographicDisplays
+  - ShopGUIPlus

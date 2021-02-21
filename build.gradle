@@ -26,10 +26,14 @@ repositories {
 dependencies {
     shadow 'org.spigotmc:spigot:1.16.4'
     shadow 'com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT'
-    shadow 'com.gmail.filoghost.holographicdisplays:holographicdisplays-api:2.4.0'
+
 
     implementation fileTree(dir: 'implementation', includes: ['*.jar'])
     implementation 'io.github.bananapuncher714:NBTEditor:7.16'
+
+    // Dependencies.
+    shadow 'com.gmail.filoghost.holographicdisplays:holographicdisplays-api:2.4.0'
+    implementation 'com.github.brcdev-minecraft:shopgui-api:2.1.1'
 }
 
 shadowJar {
