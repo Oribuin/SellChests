@@ -1,0 +1,39 @@
+package xyz.oribuin.sellchests.listener;
+
+import org.bukkit.block.Block;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
+import xyz.oribuin.orilibrary.util.HexUtils;
+import xyz.oribuin.sellchests.SellChestsPlugin;
+import xyz.oribuin.sellchests.manager.DataManager;
+import xyz.oribuin.sellchests.obj.SellChest;
+
+import java.util.Optional;
+
+// Test Class
+public class ChestInteract implements Listener {
+
+    private final SellChestsPlugin plugin;
+
+    public ChestInteract(SellChestsPlugin plugin) {
+        this.plugin = plugin;
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
+    public void onInteract(PlayerInteractEvent event) {
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        Block block = event.getClickedBlock();
+
+        // Check if block is null
+        if (block == null) return;
+
+        // Check if clicked block location matches a sellchest location
+        Optional<SellChest> optionalChest = this.plugin.getManager(DataManager.class).getChests().stream().filter(chest -> chest.getLocation() == block.getLocation()).findFirst();
+
+        // Check if chest is an actual sell chest
+        event.getPlayer().sendMessage(HexUtils.colorify("#FE5F75This is a " + ((optionalChest.isPresent()) ? "#0BAB64valid" : "#F53844invalid") + " #FE5F75sell chest!"));
+    }
+}

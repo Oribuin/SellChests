@@ -1,0 +1,6 @@
+name: SellChests
+main: xyz.oribuin.sellchests.SellChestsPlugin
+description: Sellchests plugin.
+api-version: '1.16'
+author: Oribuin
+version: '1.0'
