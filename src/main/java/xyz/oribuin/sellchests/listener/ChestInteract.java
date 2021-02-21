@@ -8,12 +8,11 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import xyz.oribuin.sellchests.SellChestsPlugin;
+import xyz.oribuin.sellchests.gui.SettingGUI;
 import xyz.oribuin.sellchests.manager.DataManager;
 import xyz.oribuin.sellchests.obj.SellChest;
 
 import java.util.Optional;
-
-import static xyz.oribuin.orilibrary.util.HexUtils.colorify;
 
 // Test Class
 public class ChestInteract implements Listener {
@@ -38,13 +37,12 @@ public class ChestInteract implements Listener {
 
         // Check if clicked block location matches a sellchest location
         Optional<SellChest> optionalChest = data.getChests().stream().filter(chest -> chest.getLocation().equals(block.getLocation())).findAny();
+        if (!optionalChest.isPresent() || event.hasItem()) return;
 
-        // Check if chest is an actual sell chest
 
-        if (optionalChest.isPresent()) {
-            event.getPlayer().sendMessage(colorify("#0BAB64Valid"));
-        } else {
-            event.getPlayer().sendMessage(colorify("#F53844Invalid"));
+        if (event.getPlayer().isSneaking()) {
+            optionalChest.ifPresent(chest -> new SettingGUI(plugin, chest).createMenu(event.getPlayer()));
+            event.setCancelled(true);
         }
     }
 }
