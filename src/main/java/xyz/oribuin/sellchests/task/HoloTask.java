@@ -1,13 +1,16 @@
 package xyz.oribuin.sellchests.task;
 
-import org.bukkit.Color;
-import org.bukkit.Particle;
+import com.gmail.filoghost.holographicdisplays.api.Hologram;
+import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import org.bukkit.scheduler.BukkitRunnable;
 import xyz.oribuin.sellchests.SellChestsPlugin;
 import xyz.oribuin.sellchests.manager.DataManager;
 import xyz.oribuin.sellchests.obj.SellChest;
 
 import java.util.List;
+import java.util.Optional;
+
+import static xyz.oribuin.orilibrary.util.HexUtils.colorify;
 
 public class HoloTask extends BukkitRunnable {
 
@@ -20,10 +23,17 @@ public class HoloTask extends BukkitRunnable {
     @Override
     public void run() {
         final List<SellChest> chests = this.plugin.getManager(DataManager.class).getChests();
+        chests.stream().filter(SellChest::isEnabled).filter(SellChest::hasHologram).forEach(chest -> {
+            Optional<Hologram> hologramOptional = HologramsAPI.getHolograms(plugin).stream().filter(hologram -> hologram.getLocation().equals(chest.getLocation())).findFirst();
 
-        chests.forEach(chest -> {
-            chest.getLocation().getWorld().spawnParticle(Particle.REDSTONE, chest.getLocation().add(0.5, 0.0, 0.5), 3, 0.0, 1.0, 0.0, new Particle.DustOptions(Color.AQUA, 2f));
-            chest.getLocation().getWorld().spawnParticle(Particle.SOUL_FIRE_FLAME, chest.getLocation().add(0.5, 0.0, 0.5), 3, 1.0, 0.0, 1.0, 0);
+            if (!hologramOptional.isPresent()) {
+                Hologram hologram = HologramsAPI.createHologram(plugin, chest.getLocation());
+                hologram.setAllowPlaceholders(true);
+                hologram.appendTextLine(colorify("#b00b1e~~~~~~~~~~~~~"));
+                hologram.appendTextLine(colorify("#c0ffeeLevel: " + chest.getTier().getLevel()));
+                hologram.appendTextLine(colorify("#c0ffeeMultiplier: " + chest.getTier().getMultiplier()));
+            }
         });
+
     }
 }

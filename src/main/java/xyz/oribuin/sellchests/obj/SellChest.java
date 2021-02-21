@@ -20,6 +20,10 @@ public class SellChest {
     private Location location;
     @NotNull
     private int soldItems = 0;
+    @NotNull
+    private boolean enabled = true;
+    @NotNull
+    private boolean hasHologram = true;
 
     public SellChest(Tier tier, int id, UUID owner, Location location) {
         this.tier = tier;
@@ -64,4 +68,19 @@ public class SellChest {
         this.soldItems = soldItems;
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean hasHologram() {
+        return hasHologram;
+    }
+
+    public void setHologram(boolean hasHologram) {
+        this.hasHologram = hasHologram;
+    }
 }

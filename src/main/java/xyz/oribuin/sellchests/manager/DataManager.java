@@ -42,7 +42,7 @@ public class DataManager extends Manager {
     private void createTable() {
         this.async(task -> this.connector.connect(connection -> {
 
-            String query = "CREATE TABLE IF NOT EXISTS chests (id INTEGER, owner VARCHAR (36), tier INTEGER, locX DOUBLE, locY DOUBLE, locZ DOUBLE, world VARCHAR(200), soldItems INTEGER)";
+            String query = "CREATE TABLE IF NOT EXISTS chests (id INTEGER, owner VARCHAR (36), tier INTEGER, locX DOUBLE, locY DOUBLE, locZ DOUBLE, world VARCHAR(200), soldItems INTEGER, enabled BOOLEAN, hologram BOOLEAN)";
             // Create the chest.
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.executeUpdate();
@@ -59,7 +59,7 @@ public class DataManager extends Manager {
         this.async(task -> this.connector.connect(connection -> {
 
             // Save the chest into the SQL DB
-            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO chests (id, owner, tier, locX, locY, locZ, world, soldItems) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO chests (id, owner, tier, locX, locY, locZ, world, soldItems, enabled, hologram) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                 statement.setInt(1, chest.getId());
                 statement.setString(2, chest.getOwner().toString());
                 statement.setInt(3, chest.getTier().getLevel());
@@ -68,6 +68,8 @@ public class DataManager extends Manager {
                 statement.setDouble(6, chest.getLocation().getBlockZ());
                 statement.setString(7, chest.getLocation().getWorld().getName());
                 statement.setInt(8, chest.getSoldItems());
+                statement.setBoolean(9, chest.isEnabled());
+                statement.setBoolean(10, chest.hasHologram());
                 statement.executeUpdate();
             }
         }));
@@ -109,6 +111,8 @@ public class DataManager extends Manager {
                     // Recreate the chest
                     SellChest chest = new SellChest(tierManager.getTier(result.getInt("tier")), result.getInt("id"), UUID.fromString(result.getString("owner")), loc);
                     chest.setSoldItems(result.getInt("soldItems"));
+                    chest.setEnabled(result.getBoolean("enabled"));
+                    chest.setHologram(result.getBoolean("hologram"));
                     chests.add(chest);
                 }
             }
