@@ -8,6 +8,7 @@ import xyz.oribuin.orilibrary.util.FileUtils;
 import xyz.oribuin.sellchests.SellChestsPlugin;
 import xyz.oribuin.sellchests.obj.Tier;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,5 +54,18 @@ public class TierManager extends Manager {
         }
 
         return tiers;
+    }
+
+    @Nullable
+    public Tier getTier(int id) {
+        ConfigurationSection section = this.config.getConfigurationSection("tiers");
+        if (section == null || section.getKeys(false).size() == 0) return null;
+
+        // Add the tier.
+        return new Tier(section.getInt(String.valueOf(id)))
+                .setMultiplier(section.getDouble(id + ".multiplier"))
+                .setSellInterval(section.getInt(id + ".selltimer"))
+                .setName(section.getString(id + ".name"))
+                .setLore(section.getStringList(id + ".lore"));
     }
 }

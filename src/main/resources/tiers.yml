@@ -1,0 +1,13 @@
+tiers:
+  1:
+    name: "#009FFD~ #647DEETier 1 #009FFD~"
+    selltimer: 60
+    multiplier: 1.0
+    lore:
+      - '&7The first tier.'
+  2:
+    name: "#009FFD~ #647DEETier 2 #009FFD~"
+    selltimer: 60
+    multiplier: 1.2
+    lore:
+      - '&7The second tier.'

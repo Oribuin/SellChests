@@ -12,6 +12,7 @@ import xyz.oribuin.sellchests.manager.DataManager;
 import xyz.oribuin.sellchests.obj.SellChest;
 import xyz.oribuin.sellchests.obj.Tier;
 
+import java.util.Collections;
 import java.util.List;
 
 import static xyz.oribuin.orilibrary.util.HexUtils.colorify;
@@ -36,13 +37,23 @@ public class SellchestsCommand extends Command {
     public void runFunction(@NotNull CommandSender commandSender, @NotNull String s, @NotNull String[] strings) {
         Player player = (Player) commandSender;
         DataManager data = this.plugin.getManager(DataManager.class);
-        data.createSellchest(new SellChest(new Tier(1), 1, player.getUniqueId(), player.getLocation()));
-        player.getLocation().getBlock().setType(Material.CHEST);
-        player.sendMessage(colorify("#b00b1eSuccessfully created a Sell Chest"));
+
+        if (strings.length == 0) {
+            // Create a new sellchest
+            data.createSellchest(new SellChest(new Tier(1), 1, player.getUniqueId(), player.getLocation()));
+            player.getLocation().getBlock().setType(Material.CHEST);
+            player.sendMessage(colorify("#b00b1eSuccessfully created a Sell Chest"));
+            return;
+        }
+5
+        // Purge all the sellchests.
+        data.purgeSellchests();
+        player.sendMessage(colorify("#b00b1eSuccessfully purged all sell chests."));
+
     }
 
     @Override
     public @Nullable List<Argument> complete(@NotNull CommandSender commandSender, @NotNull String s, @NotNull String[] strings) {
-        return null;
+        return Collections.singletonList(new Argument(0, new String[]{"purge"}));
     }
 }

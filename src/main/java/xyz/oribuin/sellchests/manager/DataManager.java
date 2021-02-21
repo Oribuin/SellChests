@@ -1,8 +1,7 @@
 package xyz.oribuin.sellchests.manager;
 
-import org.bukkit.configuration.InvalidConfigurationException;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.libs.org.apache.commons.codec.binary.Base64;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.scheduler.BukkitTask;
 import xyz.oribuin.orilibrary.database.DatabaseConnector;
 import xyz.oribuin.orilibrary.database.SQLiteConnector;
@@ -15,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 public class DataManager extends Manager {
@@ -43,8 +43,9 @@ public class DataManager extends Manager {
     private void createTable() {
         this.async(task -> this.connector.connect(connection -> {
 
+            String query = "CREATE TABLE IF NOT EXISTS chests (id INTEGER, owner VARCHAR (36), tier INTEGER, locX DOUBLE, locY DOUBLE, locZ DOUBLE, world VARCHAR(200), soldItems INTEGER)";
             // Create the chest.
-            try (PreparedStatement statement = connection.prepareStatement("CREATE TABLE IF NOT EXISTS chests (chest LONGTEXT)")) {
+            try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.executeUpdate();
             }
         }));
@@ -57,9 +58,29 @@ public class DataManager extends Manager {
      */
     public void createSellchest(SellChest chest) {
         this.async(task -> this.connector.connect(connection -> {
-            // Add serialized chest.
-            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO chests (chest) VALUES(?)")) {
-                statement.setString(1, this.serializeChest(chest));
+
+            // Save the chest into the SQL DB
+            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO chests (id, owner, tier, locX, locY, locZ, world, soldItems) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+                statement.setInt(1, chest.getId());
+                statement.setString(2, chest.getOwner().toString());
+                statement.setInt(3, chest.getTier().getLevel());
+                statement.setDouble(4, chest.getLocation().getBlockX());
+                statement.setDouble(5, chest.getLocation().getBlockY());
+                statement.setDouble(6, chest.getLocation().getBlockZ());
+                statement.setString(7, chest.getLocation().getWorld().getName());
+                statement.setInt(8, chest.getSoldItems());
+                statement.executeUpdate();
+            }
+        }));
+    }
+
+    /**
+     * Purge all sells chests from SQL DB
+     */
+
+    public void purgeSellchests() {
+        this.async(task -> this.connector.connect(connection -> {
+            try (PreparedStatement statement = connection.prepareStatement("DELETE FROM chests")) {
                 statement.executeUpdate();
             }
         }));
@@ -71,6 +92,7 @@ public class DataManager extends Manager {
      * @return A list of sell chests.
      */
     public List<SellChest> getChests() {
+        TierManager tierManager = this.plugin.getManager(TierManager.class);
         List<SellChest> chests = new ArrayList<>();
 
         // Run SQL Query
@@ -78,44 +100,22 @@ public class DataManager extends Manager {
             try (PreparedStatement statement = connection.prepareStatement("SELECT * FROM chests")) {
 
                 // Get results
+                // (id, owner, tier, locX, locY, locZ, world, soldItems)
                 ResultSet result = statement.executeQuery();
                 while (result.next()) {
-                    chests.add(this.deserializeChest(result.getString("chest")));
+
+                    // Recreate the location
+                    Location loc = new Location(Bukkit.getWorld(result.getString("world")), result.getDouble("locX"), result.getDouble("locY"), result.getDouble("locZ"));
+
+                    // Recreate the chest
+                    SellChest chest = new SellChest(tierManager.getTier(result.getInt("tier")), result.getInt("id"), UUID.fromString(result.getString("owner")), loc);
+                    chest.setSoldItems(result.getInt("soldItems"));
+                    chests.add(chest);
                 }
             }
         });
 
         return chests;
-    }
-
-
-    /**
-     * Serialize a sellchest
-     *
-     * @param chest The chest being serialized.
-     * @return Serialized Chest
-     */
-    public String serializeChest(SellChest chest) {
-        YamlConfiguration config = new YamlConfiguration();
-        config.set("chest", chest);
-        return new String(Base64.encodeBase64(config.saveToString().getBytes()));
-    }
-
-    /**
-     * Deserialize a chest from a String.
-     *
-     * @param serialized The serialized String
-     * @return Deserialized Chest
-     */
-    public SellChest deserializeChest(String serialized) {
-        YamlConfiguration config = new YamlConfiguration();
-        try {
-            config.loadFromString(new String(Base64.decodeBase64(serialized)));
-        } catch (InvalidConfigurationException ex) {
-            ex.printStackTrace();
-        }
-
-        return config.getObject("chest", SellChest.class);
     }
 
     @Override

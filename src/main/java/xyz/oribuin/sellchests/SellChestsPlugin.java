@@ -6,6 +6,7 @@ import xyz.oribuin.sellchests.command.SellchestsCommand;
 import xyz.oribuin.sellchests.listener.ChestInteract;
 import xyz.oribuin.sellchests.manager.DataManager;
 import xyz.oribuin.sellchests.manager.TierManager;
+import xyz.oribuin.sellchests.task.HoloTask;
 
 public class SellChestsPlugin extends OriPlugin {
 
@@ -31,6 +32,9 @@ public class SellChestsPlugin extends OriPlugin {
 
         // Load Listeners
         Bukkit.getPluginManager().registerEvents(new ChestInteract(this), this);
+
+        // Register tasks
+        new HoloTask(this).runTaskTimerAsynchronously(this, 0, 5);
     }
 
     @Override
