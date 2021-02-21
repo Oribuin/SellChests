@@ -20,7 +20,6 @@ public class SellChestsPlugin extends OriPlugin {
             return;
         }
 
-
         // Load Managers asynchronously
         this.getServer().getScheduler().runTaskAsynchronously(this, () -> {
             this.getManager(DataManager.class);
@@ -36,6 +35,6 @@ public class SellChestsPlugin extends OriPlugin {
 
     @Override
     public void disablePlugin() {
-
+        // Super's disablePlugin
     }
 }
