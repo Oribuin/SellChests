@@ -32,7 +32,6 @@ public class DataManager extends Manager {
 
         // Connect to sqlite
         this.connector = new SQLiteConnector(this.plugin, "sellchests.db");
-        this.plugin.getLogger().info("~ Connected to sellchests.db using SQLite");
 
         this.createTable();
     }

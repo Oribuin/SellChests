@@ -45,7 +45,7 @@ public class SellchestsCommand extends Command {
             player.sendMessage(colorify("#b00b1eSuccessfully created a Sell Chest"));
             return;
         }
-5
+
         // Purge all the sellchests.
         data.purgeSellchests();
         player.sendMessage(colorify("#b00b1eSuccessfully purged all sell chests."));
