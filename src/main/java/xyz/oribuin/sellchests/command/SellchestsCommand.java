@@ -40,7 +40,7 @@ public class SellchestsCommand extends Command {
 
         if (strings.length == 0) {
             // Create a new sellchest
-            data.createSellchest(new SellChest(new Tier(1), 1, player.getUniqueId(), player.getLocation()));
+            data.saveSellchest(new SellChest(new Tier(1), 1, player.getUniqueId(), player.getLocation()));
             player.getLocation().getBlock().setType(Material.CHEST);
             player.sendMessage(colorify("#b00b1eSuccessfully created a Sell Chest"));
             return;

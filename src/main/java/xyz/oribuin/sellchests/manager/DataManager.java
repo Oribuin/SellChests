@@ -55,11 +55,11 @@ public class DataManager extends Manager {
      *
      * @param chest The sellchest being added.
      */
-    public void createSellchest(SellChest chest) {
+    public void saveSellchest(SellChest chest) {
         this.async(task -> this.connector.connect(connection -> {
 
             // Save the chest into the SQL DB
-            try (PreparedStatement statement = connection.prepareStatement("INSERT INTO chests (id, owner, tier, locX, locY, locZ, world, soldItems, enabled, hologram) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+            try (PreparedStatement statement = connection.prepareStatement("REPLACE INTO chests (id, owner, tier, locX, locY, locZ, world, soldItems, enabled, hologram) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                 statement.setInt(1, chest.getId());
                 statement.setString(2, chest.getOwner().toString());
                 statement.setInt(3, chest.getTier().getLevel());
@@ -78,7 +78,6 @@ public class DataManager extends Manager {
     /**
      * Purge all sells chests from SQL DB
      */
-
     public void purgeSellchests() {
         this.async(task -> this.connector.connect(connection -> {
             try (PreparedStatement statement = connection.prepareStatement("DELETE FROM chests")) {
