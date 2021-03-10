@@ -38,6 +38,8 @@ dependencies {
 
 shadowJar {
     archiveClassifier.set(null)
+    // Dont fail me now minimize
+    minimize()
 
     relocate('xyz.oribuin.orilibrary', 'xyz.oribuin.sellchests.libs.orilib')
     relocate('xyz.oribuin.guilib', 'xyz.oribuin.sellchests.libs.guilib')
