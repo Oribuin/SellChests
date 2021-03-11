@@ -36,7 +36,7 @@ public class ChestInteract implements Listener {
         DataManager data = this.plugin.getManager(DataManager.class);
 
         // Check if clicked block location matches a sellchest location
-        Optional<SellChest> optionalChest = data.getChests().stream().filter(chest -> chest.getLocation().equals(block.getLocation())).findAny();
+        Optional<SellChest> optionalChest = data.getCachedChests().stream().filter(chest -> chest.getLocation().equals(block.getLocation())).findAny();
         if (!optionalChest.isPresent() || event.hasItem()) return;
 
 

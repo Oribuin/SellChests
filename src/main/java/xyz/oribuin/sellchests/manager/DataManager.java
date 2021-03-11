@@ -21,6 +21,7 @@ public class DataManager extends Manager {
 
     private final SellChestsPlugin plugin = (SellChestsPlugin) this.getPlugin();
     private DatabaseConnector connector = null;
+    private final List<SellChest> cachedChests = new ArrayList<>();
 
     public DataManager(SellChestsPlugin plugin) {
         super(plugin);
@@ -34,6 +35,7 @@ public class DataManager extends Manager {
         this.connector = new SQLiteConnector(this.plugin, "sellchests.db");
 
         this.createTable();
+        this.cachedChests.addAll(this.getChests());
     }
 
     /**
@@ -42,7 +44,7 @@ public class DataManager extends Manager {
     private void createTable() {
         this.async(task -> this.connector.connect(connection -> {
 
-            String query = "CREATE TABLE IF NOT EXISTS chests (id INTEGER, owner VARCHAR (36), tier INTEGER, locX DOUBLE, locY DOUBLE, locZ DOUBLE, world VARCHAR(200), soldItems INTEGER, enabled BOOLEAN, hologram BOOLEAN)";
+            String query = "CREATE TABLE IF NOT EXISTS sellchestsplugin_chests (id INTEGER, owner VARCHAR (36), tier INTEGER, locX DOUBLE, locY DOUBLE, locZ DOUBLE, world VARCHAR(200), soldItems INTEGER, enabled BOOLEAN, hologram BOOLEAN)";
             // Create the chest.
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.executeUpdate();
@@ -59,7 +61,7 @@ public class DataManager extends Manager {
         this.async(task -> this.connector.connect(connection -> {
 
             // Save the chest into the SQL DB
-            try (PreparedStatement statement = connection.prepareStatement("REPLACE INTO chests (id, owner, tier, locX, locY, locZ, world, soldItems, enabled, hologram) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+            try (PreparedStatement statement = connection.prepareStatement("REPLACE INTO sellchestsplugin_chests (id, owner, tier, locX, locY, locZ, world, soldItems, enabled, hologram) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                 statement.setInt(1, chest.getId());
                 statement.setString(2, chest.getOwner().toString());
                 statement.setInt(3, chest.getTier().getLevel());
@@ -73,6 +75,9 @@ public class DataManager extends Manager {
                 statement.executeUpdate();
             }
         }));
+
+        this.cachedChests.removeIf(x -> x.getId() == chest.getId());
+        this.cachedChests.add(chest);
     }
 
     /**
@@ -80,7 +85,7 @@ public class DataManager extends Manager {
      */
     public void purgeSellchests() {
         this.async(task -> this.connector.connect(connection -> {
-            try (PreparedStatement statement = connection.prepareStatement("DELETE FROM chests")) {
+            try (PreparedStatement statement = connection.prepareStatement("DELETE FROM sellchestsplugin_chests")) {
                 statement.executeUpdate();
             }
         }));
@@ -97,7 +102,7 @@ public class DataManager extends Manager {
 
         // Run SQL Query
         this.connector.connect(connection -> {
-            try (PreparedStatement statement = connection.prepareStatement("SELECT * FROM chests")) {
+            try (PreparedStatement statement = connection.prepareStatement("SELECT * FROM sellchestsplugin_chests")) {
 
                 // Get results
                 // (id, owner, tier, locX, locY, locZ, world, soldItems)
@@ -127,5 +132,9 @@ public class DataManager extends Manager {
 
     private void async(Consumer<BukkitTask> callback) {
         this.plugin.getServer().getScheduler().runTaskAsynchronously(this.plugin, callback);
+    }
+
+    public List<SellChest> getCachedChests() {
+        return cachedChests;
     }
 }

@@ -7,3 +7,5 @@ version: '1.0'
 softdepend:
   - HolographicDisplays
   - ShopGUIPlus
+  - PlaceholderAPI
+  - Vault

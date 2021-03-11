@@ -1,5 +1,7 @@
 package xyz.oribuin.sellchests.command;
 
+import com.gmail.filoghost.holographicdisplays.api.Hologram;
+import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -40,9 +42,19 @@ public class SellchestsCommand extends Command {
 
         if (strings.length == 0) {
             // Create a new sellchest
-            data.saveSellchest(new SellChest(new Tier(1), 1, player.getUniqueId(), player.getLocation()));
-            player.getLocation().getBlock().setType(Material.CHEST);
+            SellChest chest = new SellChest(new Tier(1), 1, player.getUniqueId(), player.getLocation());
+
+            data.saveSellchest(chest);
+            chest.getLocation().getBlock().setType(Material.CHEST);
             player.sendMessage(colorify("#b00b1eSuccessfully created a Sell Chest"));
+
+            Hologram hologram = HologramsAPI.createHologram(plugin, chest.getLocation().add(0.5, 1.5, 0.5));
+            hologram.setAllowPlaceholders(true);
+            hologram.appendTextLine(colorify("#b00b1e~~~~~~~~~~~~~"));
+            hologram.appendTextLine(colorify("#c0ffeeLevel: " + chest.getTier().getLevel()));
+            hologram.appendTextLine(colorify("#c0ffeeMultiplier: " + chest.getTier().getMultiplier()));
+            hologram.appendTextLine(colorify("#c0ffeeSold Items: " + chest.getSoldItems()));
+            hologram.appendTextLine(colorify("#b00b1e~~~~~~~~~~~~~"));
             return;
         }
 

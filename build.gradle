@@ -18,8 +18,10 @@ repositories {
     maven { url 'https://hub.spigotmc.org/nexus/content/repositories/snapshots/' }
     maven { url 'https://repo.rosewooddev.io/repository/public/' }
     maven { url 'http://repo.extendedclip.com/content/repositories/placeholderapi/' }
-    maven { url 'https://repo.codemc.org/repository/maven-public' }
+    maven { url "https://maven.enginehub.org/repo/" }
     maven { url 'https://jitpack.io' }
+    maven { url 'https://repo.codemc.org/repository/maven-public' }
+    maven { url 'https://repo.dmulloy2.net/nexus/repository/public/' }
     maven { url 'https://papermc.io/repo/repository/maven-public/' }
 }
 
@@ -27,13 +29,15 @@ dependencies {
     shadow 'org.spigotmc:spigot:1.16.4'
     shadow 'com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT'
 
-
     implementation fileTree(dir: 'implementation', includes: ['*.jar'])
     implementation 'io.github.bananapuncher714:NBTEditor:7.16'
 
-    // Dependencies.
+    // Plugin Dependencies.
+    shadow 'com.github.MilkBowl:VaultAPI:1.7'
+    shadow 'me.clip:placeholderapi:2.10.9'
     shadow 'com.gmail.filoghost.holographicdisplays:holographicdisplays-api:2.4.0'
-    implementation 'com.github.brcdev-minecraft:shopgui-api:2.1.1'
+    shadow 'com.github.brcdev-minecraft:shopgui-api:2.1.1'
+
 }
 
 shadowJar {
@@ -45,5 +49,3 @@ shadowJar {
     relocate('xyz.oribuin.guilib', 'xyz.oribuin.sellchests.libs.guilib')
     relocate('io.github.bananapuncher', 'xyz.oribuin.sellchests.libs.nbt')
 }
-
-build.dependsOn('shadowJar')

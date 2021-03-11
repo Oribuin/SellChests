@@ -83,4 +83,5 @@ public class SellChest {
     public void setHologram(boolean hasHologram) {
         this.hasHologram = hasHologram;
     }
+
 }
