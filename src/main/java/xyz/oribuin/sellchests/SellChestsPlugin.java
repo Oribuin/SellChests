@@ -16,13 +16,13 @@ public class SellChestsPlugin extends OriPlugin {
     public void enablePlugin() {
 
         // Detect Vault
-        if (!this.checkVault()) return;
+        if (!this.hasPlugin("Vault")) return;
 
         // Detect Holographic Displays
-        if (!this.checkHolograms()) return;
+        if (!this.hasPlugin("HolographicDisplays")) return;
 
         // Detect ShopGUI+
-        if (!this.checkShopGUI()) return;
+        if (!this.hasPlugin("ShopGUIPlus")) return;
 
         // Load Commands
         new SellchestsCommand(this).register(null, null, null);
@@ -42,63 +42,33 @@ public class SellChestsPlugin extends OriPlugin {
 
     }
 
+    /**
+     * Check if the server has a plugin enabled.
+     *
+     * @param pluginName The plugin
+     * @return true if plugin is enabled.
+     */
+    private boolean hasPlugin(String pluginName) {
+        Plugin plugin = this.getServer().getPluginManager().getPlugin(pluginName);
+
+        if (plugin == null || !plugin.isEnabled()) {
+            this.getLogger().severe("Please install " + pluginName + " to use this plugin.");
+            this.getLogger().severe("Disabling...");
+            this.getServer().getPluginManager().disablePlugin(this);
+            return false;
+        }
+
+        return true;
+    }
+
     @Override
     public void disablePlugin() {
-        // Super's disablePlugin
-    }
-
-    /**
-     * Check if the server has HolographicDisplays Enabled.
-     *
-     * @return True if holograms are enabled.
-     */
-    private boolean checkHolograms() {
-        Plugin plugin = this.getServer().getPluginManager().getPlugin("HolographicDisplays");
-        if (plugin == null || !plugin.isEnabled()) {
-            this.getLogger().severe("Please install HolographicDisplays to use this plugin.");
-            this.getLogger().severe("Disabling...");
-            this.getServer().getPluginManager().disablePlugin(this);
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Check if the server has ShopGUI+ Enabled.
-     *
-     * @return True if ShopGUI+ Is enabled.
-     */
-    private boolean checkShopGUI() {
-        Plugin plugin = this.getServer().getPluginManager().getPlugin("ShopGUIPlus");
-        if (plugin == null || !plugin.isEnabled()) {
-            this.getLogger().severe("Please install ShopGUIPlus to use this plugin.");
-            this.getLogger().severe("Disabling...");
-            this.getServer().getPluginManager().disablePlugin(this);
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Check if the server has Vault Enabled.
-     *
-     * @return True if Vault Is enabled.
-     */
-    private boolean checkVault() {
-        Plugin plugin = this.getServer().getPluginManager().getPlugin("Vault");
-        if (plugin == null || !plugin.isEnabled()) {
-            this.getLogger().severe("Please install Vault to use this plugin.");
-            this.getLogger().severe("Disabling...");
-            this.getServer().getPluginManager().disablePlugin(this);
-            return false;
-        }
-
-        return true;
+        // Unused
     }
 
     public static Economy getEconomy() {
         return Bukkit.getServicesManager().getRegistration(Economy.class).getProvider();
     }
+
+
 }
