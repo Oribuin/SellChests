@@ -46,6 +46,5 @@ shadowJar {
     minimize()
 
     relocate('xyz.oribuin.orilibrary', 'xyz.oribuin.sellchests.libs.orilib')
-    relocate('xyz.oribuin.guilib', 'xyz.oribuin.sellchests.libs.guilib')
     relocate('io.github.bananapuncher', 'xyz.oribuin.sellchests.libs.nbt')
 }

@@ -2,8 +2,10 @@ package xyz.oribuin.sellchests.manager;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.scheduler.BukkitTask;
 import xyz.oribuin.orilibrary.database.DatabaseConnector;
+import xyz.oribuin.orilibrary.database.MySQLConnector;
 import xyz.oribuin.orilibrary.database.SQLiteConnector;
 import xyz.oribuin.orilibrary.manager.Manager;
 import xyz.oribuin.orilibrary.util.FileUtils;
@@ -15,33 +17,46 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class DataManager extends Manager {
 
     private final SellChestsPlugin plugin = (SellChestsPlugin) this.getPlugin();
-    private DatabaseConnector connector = null;
-    private final List<SellChest> cachedChests = new ArrayList<>();
 
-    public DataManager(SellChestsPlugin plugin) {
+    private final List<SellChest> cachedChests = new ArrayList<>();
+    private DatabaseConnector connector;
+
+    public DataManager(final SellChestsPlugin plugin) {
         super(plugin);
     }
 
     @Override
     public void enable() {
-        FileUtils.createFile(plugin, "sellchests.db");
+        final FileConfiguration config = this.plugin.getConfig();
 
-        // Connect to sqlite
-        this.connector = new SQLiteConnector(this.plugin, "sellchests.db");
+        if (config.getBoolean("mysql.enabled")) {
+            // Define all the MySQL Values.
+            String hostName = config.getString("mysql.host");
+            int port = config.getInt("mysql.port");
+            String dbname = config.getString("mysql.dbname");
+            String username = config.getString("mysql.username");
+            String password = config.getString("mysql.password");
+            boolean ssl = config.getBoolean("mysql.ssl");
 
-        this.createTable();
-        this.cachedChests.addAll(this.getChests());
-    }
+            // Connect to MySQL.
+            this.connector = new MySQLConnector(this.plugin, hostName, port, dbname, username, password, ssl);
+            this.plugin.getLogger().info("Using MySQL for Database ~ " + hostName + ":" + port);
+        } else {
 
-    /**
-     * Create all the required SQL Tables for plugin saving.
-     */
-    private void createTable() {
+            // Create the database File
+            FileUtils.createFile(this.plugin, "eternaltags.db");
+
+            // Connect to SQLite
+            this.connector = new SQLiteConnector(this.plugin, "eternaltags.db");
+            this.getPlugin().getLogger().info("Using SQLite for Database ~ eternaltags.db");
+        }
+
         this.async(task -> this.connector.connect(connection -> {
 
             String query = "CREATE TABLE IF NOT EXISTS sellchestsplugin_chests (id INTEGER, owner VARCHAR (36), tier INTEGER, locX DOUBLE, locY DOUBLE, locZ DOUBLE, world VARCHAR(200), soldItems INTEGER, enabled BOOLEAN, hologram BOOLEAN)";
@@ -49,15 +64,22 @@ public class DataManager extends Manager {
             try (PreparedStatement statement = connection.prepareStatement(query)) {
                 statement.executeUpdate();
             }
+
         }));
+
+        this.cacheChests();
+
     }
 
     /**
      * Add a sell chest into the SQLite DB
      *
-     * @param chest The sellchest being added.
+     * @param chest The sellchest being saved.
      */
     public void saveSellchest(SellChest chest) {
+        this.cachedChests.removeIf(x -> x.getId() == chest.getId());
+        this.cachedChests.add(chest);
+
         this.async(task -> this.connector.connect(connection -> {
 
             // Save the chest into the SQL DB
@@ -76,32 +98,31 @@ public class DataManager extends Manager {
             }
         }));
 
-        this.cachedChests.removeIf(x -> x.getId() == chest.getId());
-        this.cachedChests.add(chest);
     }
 
     /**
-     * Purge all sells chests from SQL DB
+     * Purge all teh existing saved and cached chests in the plugin.
      */
     public void purgeSellchests() {
+
+        this.cachedChests.clear();
+
         this.async(task -> this.connector.connect(connection -> {
             try (PreparedStatement statement = connection.prepareStatement("DELETE FROM sellchestsplugin_chests")) {
                 statement.executeUpdate();
             }
         }));
+
     }
 
     /**
-     * Get all chests inside the SQL DB
-     *
-     * @return A list of sell chests.
+     * Cache all the chests into the plugin from sql
      */
-    public List<SellChest> getChests() {
-        TierManager tierManager = this.plugin.getManager(TierManager.class);
-        List<SellChest> chests = new ArrayList<>();
+    private void cacheChests() {
+        final TierManager tierManager = this.plugin.getManager(TierManager.class);
+        final List<SellChest> chests = new ArrayList<>();
 
-        // Run SQL Query
-        this.connector.connect(connection -> {
+        CompletableFuture.runAsync(() -> this.connector.connect(connection -> {
             try (PreparedStatement statement = connection.prepareStatement("SELECT * FROM sellchestsplugin_chests")) {
 
                 // Get results
@@ -120,9 +141,12 @@ public class DataManager extends Manager {
                     chests.add(chest);
                 }
             }
+        })).thenRunAsync(() -> {
+
+            this.cachedChests.addAll(chests);
+            this.plugin.getLogger().info("Loaded & Cached (" + this.cachedChests.size() + ") Available Chests!");
         });
 
-        return chests;
     }
 
     @Override

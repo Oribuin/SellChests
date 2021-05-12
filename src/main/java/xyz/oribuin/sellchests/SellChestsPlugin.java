@@ -39,7 +39,6 @@ public class SellChestsPlugin extends OriPlugin {
             new SellingTask(this).runTaskTimerAsynchronously(this, 0, 10);
         });
 
-
     }
 
     /**
@@ -69,6 +68,5 @@ public class SellChestsPlugin extends OriPlugin {
     public static Economy getEconomy() {
         return Bukkit.getServicesManager().getRegistration(Economy.class).getProvider();
     }
-
 
 }
